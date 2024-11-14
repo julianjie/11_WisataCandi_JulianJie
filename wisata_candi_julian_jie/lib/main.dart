@@ -6,6 +6,7 @@ import 'package:wisata_candi_julian_jie/screens/search_screen.dart';
 import 'package:wisata_candi_julian_jie/screens/sign_in_screen.dart';
 import 'package:wisata_candi_julian_jie/screens/sign_up_screen.dart';
 import 'package:wisata_candi_julian_jie/screens/search_screen.dart';
+import 'package:wisata_candi_julian_jie/screens/favorite_screen.dart';
 import 'screens/detail_screen.dart';
 
 void main() {
@@ -36,7 +37,68 @@ class MainApp extends StatelessWidget {
       ),
       // home: DetailScreen(candi: candiList[0],),
       // home: const ProfileScreen(),
-      home: HomeScreen(),
+      home: MainScreen(),
+    );
+  }
+}
+
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  //TODO 1. deklarasi variable
+  int _currentIndex = 0;
+  final List<Widget> _children = [
+    HomeScreen(),
+    SearchScreen(),
+    FavoriteScreen(),
+    ProfileScreen(),
+	];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      //TODO 2. buat properti body berupa widget yang dapat ditampilkan
+      body: _children[_currentIndex],
+      //TODO 3. buat properti bottomNavigationBar dengan nilai theme
+      bottomNavigationBar: Theme(
+        data: Theme.of(context).copyWith(canvasColor: Colors.deepPurple[50]),
+        child: BottomNavigationBar(
+          currentIndex: _currentIndex,
+          onTap: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home,color: Colors.deepPurple,),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search,color: Colors.deepPurple,),
+              label: 'Search',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home,color: Colors.deepPurple,),
+              label: 'Favorite',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person,color: Colors.deepPurple,),
+              label: 'Profile',
+            ),
+          ],
+          //TODO 4. buat data dan child dati Theme
+          selectedItemColor: Colors.deepPurple,
+          unselectedItemColor: Colors.deepPurple[100],
+          showUnselectedLabels: true,
+        ),
+      ),
     );
   }
 }
