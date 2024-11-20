@@ -12,13 +12,41 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   //TODO: 1. Deklarasi Variable
-  final TextEditingController _useNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
   String _errorText = "";
   bool _isSignedIn = false;
   bool _obscurePassword = false;
+
+  //TODO: 6. membuat Fungsi SignUp
+  void _signUp(){
+    String name = _usernameController.text.trim();
+    String username = _usernameController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (password.length < 8 || 
+        !password.contains(RegExp(r'[A-Z]')) ||
+        !password.contains(RegExp(r'[a-z]')) ||
+        !password.contains(RegExp(r'[0-9]')) ||
+        !password.contains(RegExp(r'[!@#\\\$%^&*(),.?":{}|<>]')))
+      setState(() {
+        _errorText = 'Minimal 8 karakter, kombinasi [A-Z], [a-z], [0-9], [!@#\\\$%^&*(),.?":{}|<>]';
+      });
+
+      print('***SignUp Berhasil***');
+      print('Nama : $name');
+      print('Username : $username');
+      print('Password : $password');
+  }
+  //TODO: 7. membuat fungsi Dispose
+  void dispose(){
+    super.dispose();
+    _usernameController.dispose();
+    _namaController.dispose();
+    _passwordController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +76,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   SizedBox(height: 20,),
                   //TODO: 5.Pasang TextFormField Nama Pengguna
                   TextFormField(
-                    controller: _useNameController,
+                    controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: "Nama Pengguna",
                       border: OutlineInputBorder(),
@@ -78,7 +106,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   //TODO: 7.Pasang Elevated Button Sign Up
                   SizedBox(height: 20,),
                   ElevatedButton(
-                    onPressed: (){}, 
+                    onPressed: (){
+                      _signUp();
+                    }, 
                     child: const Text('Sign-in'),
                   ),
                   //TODO: 8. Pasang Text Button Sign Up
