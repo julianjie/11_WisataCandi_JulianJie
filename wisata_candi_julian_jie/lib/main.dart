@@ -37,7 +37,7 @@ class MainApp extends StatelessWidget {
       ),
       // home: DetailScreen(candi: candiList[0],),
       // home: const ProfileScreen(),
-      home: MainScreen(),
+      home: SignUpScreen(),
     );
   }
 }
