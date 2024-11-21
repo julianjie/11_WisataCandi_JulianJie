@@ -38,6 +38,12 @@ class MainApp extends StatelessWidget {
       // home: DetailScreen(candi: candiList[0],),
       // home: const ProfileScreen(),
       home: SignUpScreen(),
+      initialRoute: '/',
+      routes: {
+        '/homescreen': (context) =>const MainScreen(),
+        '/signin': (context) =>const SignInScreen(),
+        '/signup': (context) =>const SignUpScreen(),
+      },
     );
   }
 }
@@ -85,7 +91,7 @@ class _MainScreenState extends State<MainScreen> {
               label: 'Search',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.home,color: Colors.deepPurple,),
+              icon: Icon(Icons.favorite,color: Colors.deepPurple,),
               label: 'Favorite',
             ),
             BottomNavigationBarItem(

@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -12,7 +13,7 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   //TODO: 1. Deklarasi Variable
-  final TextEditingController _useNameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
   final TextEditingController _passwordController = TextEditingController();
 
@@ -21,6 +22,47 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isSignedIn = false;
 
   bool _obscurePassword = false;
+
+  void _signIn() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String savedUsername = prefs.getString('username')??'';
+    final String savedPassword = prefs.getString('password')??'';
+    final String enteredUsername = _usernameController.text.trim();
+    final String enteredPassword = _passwordController.text.trim();
+
+    if( enteredUsername.isEmpty || enteredPassword.isEmpty){
+      setState(() {
+        _errorText = 'Nama Pengguna dan Kata sandi harus diisi';
+      });
+      return;
+    }
+    if( savedUsername.isEmpty || savedPassword.isEmpty){
+      setState(() {
+        _errorText = 'Pengguna belum terdaftar. Silahkan daftar terlebih dahulu';
+      });
+      return;
+    }
+
+    if(enteredUsername == savedUsername && enteredPassword == savedPassword) {
+      setState(() {
+        _errorText = '';
+        _isSignedIn = true;
+        prefs.setBool('isSignIn', true);
+      });
+      //Pemanggilan untuk menghapus semua halaman dalam tumpukan navigasi
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        Navigator.of(context).popUntil((route)=>route.isFirst);
+      });
+      //Sign In berhasil, navigasi ke layar utama
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        Navigator.pushReplacementNamed(context, '/homescreen');
+      });
+    }else {
+      setState(() {
+        _errorText = 'Nama Pengguna atau Kata Sandi Salah.';
+      });
+    }
+  }  
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +83,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 children: [
                   //TODO: 5.Pasang TextFormField Nama Pengguna
                   TextFormField(
-                    controller: _useNameController,
+                    controller: _usernameController,
                     decoration: const InputDecoration(
                       labelText: "Nama Pengguna",
                       border: OutlineInputBorder(),
@@ -71,7 +113,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   //TODO: 7.Pasang Elevated Button Sign In
                   SizedBox(height: 20,),
                   ElevatedButton(
-                    onPressed: (){}, 
+                    onPressed: (){
+                      _signIn();
+                    }, 
                     child: const Text('Sign-in'),
                   ),
                   //TODO: 8. Pasang Text Button Sign Up
@@ -95,7 +139,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           fontSize: 16,
                           ),
                           recognizer: TapGestureRecognizer()
-                          ..onTap = (){},   
+                          ..onTap = (){
+                            Navigator.pushNamed(context, '/signup');
+                          },   
                         ),
                       ],      
                     ),
