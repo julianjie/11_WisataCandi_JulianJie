@@ -22,12 +22,15 @@ class ItemCard extends StatelessWidget {
           children: [
             //TODO 3. Buat image sebagai anak dari column
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.asset(
-                  candi.imageAsset,
-                  width: double.infinity,
-                  fit:BoxFit.cover,
+              child: Hero(
+                tag: candi.imageAsset,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: Image.asset(
+                    candi.imageAsset,
+                    width: double.infinity,
+                    fit:BoxFit.cover,
+                  ),
                 ),
               ),
             ),
