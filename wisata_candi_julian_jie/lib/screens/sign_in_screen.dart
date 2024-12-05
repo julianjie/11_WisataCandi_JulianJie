@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,44 +23,57 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _isSignedIn = false;
 
   bool _obscurePassword = false;
+    Future<Map<String, String>> _retrieveAndDecryptDataFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final encryptedUsername = prefs.getString('username') ?? '';
+    final encryptedPassword = prefs.getString('password') ?? '';
+    final keyString = prefs.getString('key') ?? '';
+    final ivString = prefs.getString('iv') ?? '';
+
+    if (keyString.isEmpty || ivString.isEmpty) {
+      return {};
+    }
+
+    final key = encrypt.Key.fromBase64(keyString);
+    final iv = encrypt.IV.fromBase64(ivString);
+    final encrypter = encrypt.Encrypter(encrypt.AES(key));
+
+    final decryptedUsername = encrypter.decrypt64(encryptedUsername, iv: iv);
+    final decryptedPassword = encrypter.decrypt64(encryptedPassword, iv: iv);
+
+    return {'username': decryptedUsername, 'password': decryptedPassword};
+  }
 
   void _signIn() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final String savedUsername = prefs.getString('username')??'';
-    final String savedPassword = prefs.getString('password')??'';
-    final String enteredUsername = _usernameController.text.trim();
-    final String enteredPassword = _passwordController.text.trim();
+    try {
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
 
-    if( enteredUsername.isEmpty || enteredPassword.isEmpty){
-      setState(() {
-        _errorText = 'Nama Pengguna dan Kata sandi harus diisi';
-      });
-      return;
-    }
-    if( savedUsername.isEmpty || savedPassword.isEmpty){
-      setState(() {
-        _errorText = 'Pengguna belum terdaftar. Silahkan daftar terlebih dahulu';
-      });
-      return;
-    }
+      if (username.isEmpty || password.isEmpty) {
+        setState(() {
+          _errorText = 'Username dan password tidak boleh kosong';
+        });
+        return;
+      }
 
-    if(enteredUsername == savedUsername && enteredPassword == savedPassword) {
-      setState(() {
-        _errorText = '';
-        _isSignedIn = true;
-        prefs.setBool('isSignIn', true);
-      });
-      //Pemanggilan untuk menghapus semua halaman dalam tumpukan navigasi
-      WidgetsBinding.instance.addPostFrameCallback((_){
-        Navigator.of(context).popUntil((route)=>route.isFirst);
-      });
-      //Sign In berhasil, navigasi ke layar utama
-      WidgetsBinding.instance.addPostFrameCallback((_){
+      final data = await _retrieveAndDecryptDataFromPrefs();
+      if (data.isEmpty) {
+        setState(() {
+          _errorText = 'Tidak ada kredensial tersimpan';
+        });
+        return;
+      }
+
+      if (username == data['username'] && password == data['password']) {
         Navigator.pushReplacementNamed(context, '/homescreen');
-      });
-    }else {
+      } else {
+        setState(() {
+          _errorText = 'Username atau password salah';
+        });
+      }
+    } catch (e) {
       setState(() {
-        _errorText = 'Nama Pengguna atau Kata Sandi Salah.';
+        _errorText = 'Terjadi kesalahan: $e';
       });
     }
   }  

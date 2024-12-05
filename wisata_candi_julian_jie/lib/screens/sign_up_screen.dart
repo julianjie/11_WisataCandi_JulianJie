@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -23,27 +24,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   //TODO: 6. membuat Fungsi SignUp
   void _signUp() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String name = _usernameController.text.trim();
-    final String username = _usernameController.text.trim();
-    final String password = _passwordController.text.trim();
-    
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
 
-    if (password.length < 8 || 
-        !password.contains(RegExp(r'[A-Z]')) ||
-        !password.contains(RegExp(r'[a-z]')) ||
-        !password.contains(RegExp(r'[0-9]')) ||
-        !password.contains(RegExp(r'[!@#\\\$%^&*(),.?":{}|<>]'))){
+    if (password.length < 8 ||
+        !RegExp(r'[A-Z]').hasMatch(password) ||
+        !RegExp(r'[a-z]').hasMatch(password) ||
+        !RegExp(r'[0-9]').hasMatch(password) ||
+        !RegExp(r'[!@#\$%^&*(),.?":{}|<>]').hasMatch(password)) {
       setState(() {
-        _errorText = 'Minimal 8 karakter, kombinasi [A-Z], [a-z], [0-9], [!@#\\\$%^&*(),.?":{}|<>]';
+        _errorText = 'Minimal 8 karakter, kombinasi huruf, angka, simbol';
       });
       return;
     }
-      prefs.setString('fulname', name);
-      prefs.setString('username', username);
-      prefs.setString('password', password);
 
-      Navigator.pushReplacementNamed(context, '/signin');
+    final prefs = await SharedPreferences.getInstance();
+    final key = encrypt.Key.fromLength(32);
+    final iv = encrypt.IV.fromLength(16);
+    final Encrypter = encrypt.Encrypter(encrypt.AES(key));
+    final encryptedName = Encrypter.encrypt(name, iv: iv);
+    final encryptedUsername = Encrypter.encrypt(username, iv: iv);
+    final encryptedPassword = Encrypter.encrypt(password, iv: iv);
+
+    prefs.setString('username', Encrypter.encrypt(username, iv: iv).base64);
+    prefs.setString('fulname', Encrypter.encrypt(name, iv: iv).base64);
+    prefs.setString('password', Encrypter.encrypt(password, iv: iv).base64);
+    prefs.setString('key', key.base64);
+    prefs.setString('iv', iv.base64);
+
+    Navigator.pushReplacementNamed(context, '/signin');
   }
   //TODO: 7. membuat fungsi Dispose
   void dispose(){
